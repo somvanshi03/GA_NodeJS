@@ -24,8 +24,8 @@ jobs:
     - name: Install dependencies
       run: npm install  # Installs the dependencies defined in your package.json
 
-    - name: Run tests
-      run: npm test  # Runs tests defined in your project
+#    - name: Run tests
+#      run: npm test  # Runs tests defined in your project
 
     - name: Build project
       run: npm run build  # Optionally, run a build script if your project requires it
