@@ -1,0 +1,38 @@
+name: Node.js CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # You can also use windows-latest or macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  # This checks out your repository
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'  # Specify the version of Node.js to use
+
+    - name: Install dependencies
+      run: npm install  # Installs the dependencies defined in your package.json
+
+    - name: Run tests
+      run: npm test  # Runs tests defined in your project
+
+    - name: Build project
+      run: npm run build  # Optionally, run a build script if your project requires it
+
+#    - name: Lint code (optional)
+#      run: npm run lint  # Run a linter (if you have a lint script in package.json)
+
+#    - name: Deploy (optional)
+#      run: |
+#        echo "Deploying your application..."  # You can add deployment commands here

@@ -1,0 +1,74 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_HUB_REPO = "mridul08/mynodejsapp101"
+        DOCKER_CREDENTIALS = 'docker-hub-credentials-id' // Jenkins credentials for Docker Hub
+        K8S_CLUSTER = "kubernetes-cluster-name"
+        K8S_NAMESPACE = "default"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Install Node.js dependencies
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image
+                    sh 'docker build -t $DOCKER_HUB_REPO:$BUILD_NUMBER .'
+                }
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    // Login to Docker Hub
+                    withCredentials([usernamePassword(credentialsId: "$DOCKER_CREDENTIALS", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    // Push the Docker image to Docker Hub
+                    sh 'docker push $DOCKER_HUB_REPO:$BUILD_NUMBER'
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    // Apply Kubernetes deployment (assuming the Kubernetes deployment YAML is available)
+                    sh '''
+                    kubectl config use-context $K8S_CLUSTER
+                    kubectl set image deployment/myapp-deployment myapp=$DOCKER_HUB_REPO:$BUILD_NUMBER -n $K8S_NAMESPACE
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
